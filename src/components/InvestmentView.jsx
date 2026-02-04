@@ -77,7 +77,9 @@ export default function InvestmentView() {
         // Let's stick to the previous pattern of "CustomTargets" valid for defaults, 
         // and "CustomGoals" for completely new ones.
 
-        return [...INVESTMENT_GOALS, ...customGoals];
+        const hidden = JSON.parse(localStorage.getItem('HIDDEN_INVESTMENT_GOALS') || '[]');
+        const visibleDefaults = INVESTMENT_GOALS.filter(g => !hidden.includes(g.id) && !hidden.includes(g.label));
+        return [...visibleDefaults, ...customGoals];
     }, [customGoals]);
 
     // PREVIOUS EDIT LOGIC (Modified to support both types)
@@ -135,11 +137,21 @@ export default function InvestmentView() {
         setShowAddGoal(false);
     };
 
-    const handleDeleteGoal = (id) => {
-        if (!confirm("¿Borrar esta meta?")) return;
-        const updated = customGoals.filter(g => g.id !== id);
-        setCustomGoals(updated);
-        localStorage.setItem('CUSTOM_INVESTMENT_GOALS', JSON.stringify(updated));
+    const handleDeleteGoal = (goal) => {
+        const id = goal.id || goal.label;
+        if (!confirm(`¿${goal.isCustom ? 'Borrar' : 'Ocultar'} la meta "${goal.label}"?`)) return;
+
+        if (goal.isCustom) {
+            const updated = customGoals.filter(g => g.id !== id);
+            setCustomGoals(updated);
+            localStorage.setItem('CUSTOM_INVESTMENT_GOALS', JSON.stringify(updated));
+        } else {
+            // "Hide" default goal
+            const hidden = JSON.parse(localStorage.getItem('HIDDEN_INVESTMENT_GOALS') || '[]');
+            const updatedHidden = [...hidden, id];
+            localStorage.setItem('HIDDEN_INVESTMENT_GOALS', JSON.stringify(updatedHidden));
+            window.location.reload(); // Quick refresh to apply filter
+        }
     };
 
     const stats = useMemo(() => {
@@ -262,11 +274,9 @@ export default function InvestmentView() {
                                             {progress.toFixed(1)}%
                                         </div>
                                     )}
-                                    {goal.isCustom && (
-                                        <button onClick={() => handleDeleteGoal(goal.id)} className="text-neutral-600 hover:text-red-400 p-1">
-                                            <Trash2 size={14} />
-                                        </button>
-                                    )}
+                                    <button onClick={() => handleDeleteGoal(goal)} className="text-neutral-600 hover:text-red-400 p-1">
+                                        <Trash2 size={14} />
+                                    </button>
                                 </div>
                             </div>
 
@@ -335,7 +345,7 @@ export default function InvestmentView() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 z-50"
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 z-50"
                     >
                         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 w-full max-w-xs">
                             <h3 className="text-lg font-bold text-white mb-4">Nueva Meta</h3>
