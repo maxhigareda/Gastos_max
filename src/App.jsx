@@ -3,11 +3,14 @@ import GroupSelector from './components/GroupSelector';
 import TypeSelector from './components/TypeSelector';
 import ExpenseForm from './components/ExpenseForm';
 import SuccessView from './components/SuccessView';
+import SummaryView from './components/SummaryView';
 import { submitExpense } from './services/api';
 import { GROUPS } from './constants/categories';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Plus, BarChart2 } from 'lucide-react';
 
 function App() {
+  const [view, setView] = useState('entry'); // 'entry' | 'summary'
   const [step, setStep] = useState(1);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
@@ -43,8 +46,7 @@ function App() {
       const url = prompt("Por favor ingresa la URL de tu Web App de Google Script:");
       if (url) {
         localStorage.setItem('EXPENSE_API_URL', url);
-        // Reload or just continue with new url
-        window.location.reload(); // Simple reload to apply
+        window.location.reload();
         return;
       } else {
         alert("Necesitas la URL para guardar los datos.");
@@ -74,71 +76,109 @@ function App() {
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white max-w-md mx-auto relative overflow-hidden flex flex-col">
-      {/* Header */}
-      {!showSuccess && (
-        <header className="p-6 pt-8 pb-2">
-          <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-neutral-500">
-            {step === 1 ? 'Hola, ¿qué gastaste hoy?' : 'Registro de Gasto'}
-          </h1>
-          {step === 1 && <p className="text-neutral-500">Selecciona una categoría</p>}
-        </header>
+
+      {/* View Toggle / Header */}
+      {!showSuccess && step === 1 && (
+        <div className="p-4 pt-6 flex justify-center pb-2">
+          <div className="flex bg-neutral-900 rounded-full p-1 border border-white/5 relative z-10">
+            <button
+              onClick={() => setView('entry')}
+              className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all ${view === 'entry' ? 'bg-white text-black shadow-md' : 'text-neutral-400 hover:text-white'}`}
+            >
+              <Plus size={16} /> Capturar
+            </button>
+            <button
+              onClick={() => setView('summary')}
+              className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all ${view === 'summary' ? 'bg-white text-black shadow-md' : 'text-neutral-400 hover:text-white'}`}
+            >
+              <BarChart2 size={16} /> Resumen
+            </button>
+          </div>
+        </div>
       )}
 
-      {/* Main Content Area with Transitions */}
+      {/* Main Content Area */}
       <div className="flex-1 overflow-hidden relative">
         <AnimatePresence mode="wait">
-          {step === 1 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="h-full overflow-y-auto"
-            >
-              <GroupSelector onSelect={handleGroupSelect} />
-            </motion.div>
-          )}
 
-          {step === 2 && (
+          {view === 'summary' ? (
             <motion.div
-              key="step2"
+              key="summary"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               className="h-full"
             >
-              <TypeSelector
-                groupId={selectedGroup}
-                onBack={handleBack}
-                onSelect={handleTypeSelect}
-              />
+              <SummaryView onBack={() => setView('entry')} />
             </motion.div>
+          ) : (
+            // ENTRY VIEW Logic
+            <>
+              {/* Context Header for Steps */}
+              {!showSuccess && view === 'entry' && (
+                <header className="px-6 pb-2">
+                  <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-neutral-500">
+                    {step === 1 ? 'Hola, ¿qué gastaste hoy?' : (step === 2 ? currentGroup?.label : 'Detalle')}
+                  </h1>
+                  {step === 1 && <p className="text-neutral-500">Selecciona una categoría</p>}
+                </header>
+              )}
+
+              {step === 1 && (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="h-full overflow-y-auto"
+                >
+                  <GroupSelector onSelect={handleGroupSelect} />
+                </motion.div>
+              )}
+
+              {step === 2 && (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="h-full"
+                >
+                  <TypeSelector
+                    groupId={selectedGroup}
+                    onBack={handleBack}
+                    onSelect={handleTypeSelect}
+                  />
+                </motion.div>
+              )}
+
+              {step === 3 && (
+                <motion.div
+                  key="step3"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="h-full"
+                >
+                  <ExpenseForm
+                    group={currentGroup}
+                    type={selectedType}
+                    onBack={handleBack}
+                    onSubmit={handleSubmit}
+                    isSubmitting={isSubmitting}
+                  />
+                </motion.div>
+              )}
+            </>
           )}
 
-          {step === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="h-full"
-            >
-              <ExpenseForm
-                group={currentGroup}
-                type={selectedType}
-                onBack={handleBack}
-                onSubmit={handleSubmit}
-                isSubmitting={isSubmitting}
-              />
-            </motion.div>
-          )}
         </AnimatePresence>
       </div>
 
       {showSuccess && <SuccessView onReset={resetFlow} />}
 
-      {/* Configuration Hint (Hidden if URL exists) */}
-      {!API_URL && step === 1 && (
+      {/* Helper for URL - Only show on 'entry' step 1 */}
+      {!API_URL && view === 'entry' && step === 1 && (
         <div className="p-4 text-center">
           <button
             onClick={() => {
