@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2, Check, ChevronLeft } from 'lucide-react';
-import { INVESTMENT_GOALS, INVESTMENT_PLACES } from '../constants/investments';
+import { INVESTMENT_PLACES } from '../constants/investments';
 
 export default function InvestmentForm({ onBack, onSubmit, isSubmitting }) {
     const [formData, setFormData] = useState({
