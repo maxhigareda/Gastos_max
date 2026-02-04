@@ -198,20 +198,21 @@ function App() {
 
       {showSuccess && <SuccessView onReset={resetFlow} />}
 
-      {/* Helper for URL - Only show on 'entry' step 1 */}
-      {!API_URL && view === 'entry' && step === 1 && (
+      {/* Helper for URL - Show on 'entry' step 1 */}
+      {view === 'entry' && step === 1 && (
         <div className="p-4 text-center">
           <button
             onClick={() => {
-              const url = prompt("URL del Script de Google Apps:");
+              const currentUrl = localStorage.getItem('EXPENSE_API_URL') || '';
+              const url = prompt("URL del Script de Google Apps:", currentUrl);
               if (url) {
                 localStorage.setItem('EXPENSE_API_URL', url);
                 window.location.reload();
               }
             }}
-            className="text-xs text-neutral-600 underline"
+            className="text-xs text-neutral-600 underline hover:text-neutral-400 transition-colors"
           >
-            Configurar API URL
+            {API_URL ? 'Cambiar URL de Conexión' : 'Configurar API URL'}
           </button>
         </div>
       )}
