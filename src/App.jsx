@@ -4,13 +4,14 @@ import TypeSelector from './components/TypeSelector';
 import ExpenseForm from './components/ExpenseForm';
 import SuccessView from './components/SuccessView';
 import SummaryView from './components/SummaryView';
+import InvestmentView from './components/InvestmentView';
 import { submitExpense } from './services/api';
 import { GROUPS } from './constants/categories';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Plus, BarChart2 } from 'lucide-react';
+import { Plus, BarChart2, TrendingUp } from 'lucide-react';
 
 function App() {
-  const [view, setView] = useState('entry'); // 'entry' | 'summary'
+  const [view, setView] = useState('entry'); // 'entry' | 'summary' | 'investment'
   const [step, setStep] = useState(1);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
@@ -80,18 +81,24 @@ function App() {
       {/* View Toggle / Header */}
       {!showSuccess && step === 1 && (
         <div className="p-4 pt-6 flex justify-center pb-2">
-          <div className="flex bg-neutral-900 rounded-full p-1 border border-white/5 relative z-10">
+          <div className="flex bg-neutral-900 rounded-full p-1 border border-white/5 relative z-10 shrink-0">
             <button
               onClick={() => setView('entry')}
-              className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all ${view === 'entry' ? 'bg-white text-black shadow-md' : 'text-neutral-400 hover:text-white'}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all ${view === 'entry' ? 'bg-white text-black shadow-md' : 'text-neutral-400 hover:text-white'}`}
             >
-              <Plus size={16} /> Capturar
+              <Plus size={14} /> Capturar
             </button>
             <button
               onClick={() => setView('summary')}
-              className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all ${view === 'summary' ? 'bg-white text-black shadow-md' : 'text-neutral-400 hover:text-white'}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all ${view === 'summary' ? 'bg-white text-black shadow-md' : 'text-neutral-400 hover:text-white'}`}
             >
-              <BarChart2 size={16} /> Resumen
+              <BarChart2 size={14} /> Resumen
+            </button>
+            <button
+              onClick={() => setView('investment')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all ${view === 'investment' ? 'bg-lime-400 text-black shadow-md' : 'text-neutral-400 hover:text-white'}`}
+            >
+              <TrendingUp size={14} /> Inversión
             </button>
           </div>
         </div>
@@ -101,7 +108,7 @@ function App() {
       <div className="flex-1 overflow-hidden relative">
         <AnimatePresence mode="wait">
 
-          {view === 'summary' ? (
+          {view === 'summary' && (
             <motion.div
               key="summary"
               initial={{ opacity: 0, x: 20 }}
@@ -111,7 +118,21 @@ function App() {
             >
               <SummaryView onBack={() => setView('entry')} />
             </motion.div>
-          ) : (
+          )}
+
+          {view === 'investment' && (
+            <motion.div
+              key="investment"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="h-full"
+            >
+              <InvestmentView />
+            </motion.div>
+          )}
+
+          {view === 'entry' && (
             // ENTRY VIEW Logic
             <>
               {/* Context Header for Steps */}

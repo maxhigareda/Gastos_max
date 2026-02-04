@@ -29,13 +29,18 @@ export async function submitExpense(data, apiEndpoint) {
 }
 
 /**
- * Fetches all expenses from the Google Apps Script Web App.
+ * Fetches data from the Google Apps Script Web App.
  * @param {string} apiEndpoint - The URL of the deployed Web App.
- * @returns {Promise<Array>} - List of expenses.
+ * @param {string} type - 'expense' or 'investment' (default: 'expense')
+ * @returns {Promise<Array>} - List of records.
  */
-export async function getExpenses(apiEndpoint) {
+export async function getExpenses(apiEndpoint, type = 'expense') {
     try {
-        const response = await fetch(apiEndpoint, {
+        // Append query param for type
+        const separator = apiEndpoint.includes('?') ? '&' : '?';
+        const url = `${apiEndpoint}${separator}type=${type}`;
+
+        const response = await fetch(url, {
             method: "GET",
             mode: "cors",
         });
@@ -48,7 +53,7 @@ export async function getExpenses(apiEndpoint) {
         if (result.status === 'success') {
             return result.data;
         } else {
-            throw new Error(result.message || 'Failed to fetch expenses');
+            throw new Error(result.message || 'Failed to fetch data');
         }
     } catch (error) {
         console.error("API Fetch Error:", error);
