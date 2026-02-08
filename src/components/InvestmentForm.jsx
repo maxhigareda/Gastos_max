@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Loader2, Check, ChevronLeft } from 'lucide-react';
 import { INVESTMENT_PLACES } from '../constants/investments';
 
-export default function InvestmentForm({ onBack, onSubmit, isSubmitting }) {
+export default function InvestmentForm({ onBack, onSubmit, isSubmitting, availableGoals = [] }) {
     const [formData, setFormData] = useState({
         total: '',
         category: '', // Goal
@@ -60,8 +60,8 @@ export default function InvestmentForm({ onBack, onSubmit, isSubmitting }) {
                 {/* Goal Selector */}
                 <div className="space-y-2">
                     <label className="text-sm text-neutral-400">Meta (Categoría)</label>
-                    <div className="grid grid-cols-2 gap-2">
-                        {INVESTMENT_GOALS.map((goal) => (
+                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                        {availableGoals.map((goal) => (
                             <button
                                 key={goal.id}
                                 onClick={() => setFormData({ ...formData, category: goal.label })}
