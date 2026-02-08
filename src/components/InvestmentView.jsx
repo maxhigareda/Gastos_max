@@ -141,15 +141,18 @@ export default function InvestmentView() {
         const id = goal.id || goal.label;
         if (!confirm(`¿${goal.isCustom ? 'Borrar' : 'Ocultar'} la meta "${goal.label}"?`)) return;
 
+        // Common: Add to hidden list to prevent "Zombie" resurrection from historical data
+        const hidden = JSON.parse(localStorage.getItem('HIDDEN_INVESTMENT_GOALS') || '[]');
+        if (!hidden.includes(id)) {
+            const updatedHidden = [...hidden, id];
+            localStorage.setItem('HIDDEN_INVESTMENT_GOALS', JSON.stringify(updatedHidden));
+        }
+
         if (goal.isCustom) {
             const updated = customGoals.filter(g => g.id !== id);
             setCustomGoals(updated);
             localStorage.setItem('CUSTOM_INVESTMENT_GOALS', JSON.stringify(updated));
         } else {
-            // "Hide" default goal
-            const hidden = JSON.parse(localStorage.getItem('HIDDEN_INVESTMENT_GOALS') || '[]');
-            const updatedHidden = [...hidden, id];
-            localStorage.setItem('HIDDEN_INVESTMENT_GOALS', JSON.stringify(updatedHidden));
             window.location.reload(); // Quick refresh to apply filter
         }
     };
@@ -158,8 +161,9 @@ export default function InvestmentView() {
         let grandTotal = 0;
         const goalStats = {};
 
-        // Load overrides
+        // Load overrides and hidden
         const overrides = JSON.parse(localStorage.getItem('INVESTMENT_TARGETS') || '{}');
+        const hidden = JSON.parse(localStorage.getItem('HIDDEN_INVESTMENT_GOALS') || '[]');
 
         // 1. Initialize ALL goals (Def + Custom)
         allGoals.forEach(g => {
@@ -184,16 +188,22 @@ export default function InvestmentView() {
 
             grandTotal += amount;
 
+            // CHECK HIDDEN: If the category label or ID matches something hidden, SKIP IT from the list
+            // We check against the raw category name since orphans won't have an ID
+            if (hidden.includes(category) || hidden.includes(key)) {
+                return;
+            }
+
             if (goalStats[key]) {
                 goalStats[key].current += amount;
             } else {
                 // Orphaned investment (category deleted or renamed?)
-                // Just show it as is
+                // Only show if NOT hidden
                 goalStats[key] = {
                     target: 0,
                     current: amount,
                     label: category,
-                    id: category,
+                    id: category, // Use name as ID for orphans
                     isOrphan: true
                 };
             }
