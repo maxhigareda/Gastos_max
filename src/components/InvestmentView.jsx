@@ -198,9 +198,11 @@ export default function InvestmentView() {
                 goalStats[key].current += amount;
             } else {
                 // Orphaned investment (category deleted or renamed?)
-                // Only show if NOT hidden
+                // Allow it to have a target if we set one via override!
+                const effectiveTarget = overrides[category] !== undefined ? overrides[category] : 0;
+
                 goalStats[key] = {
-                    target: 0,
+                    target: effectiveTarget,
                     current: amount,
                     label: category,
                     id: category, // Use name as ID for orphans
@@ -228,7 +230,7 @@ export default function InvestmentView() {
                 className="h-full"
             >
                 <InvestmentForm
-                    availableGoals={allGoals}
+                    availableGoals={stats.resultGoals}
                     onBack={() => setShowForm(false)}
                     onSubmit={handleAddInvestment}
                     isSubmitting={isSubmitting}
