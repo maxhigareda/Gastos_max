@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getExpenses, submitExpense } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Plus, TrendingUp, Target, Wallet, Pencil, Save, X, Trash2 } from 'lucide-react';
+import { Loader2, Plus, TrendingUp, Target, Wallet, Pencil, Save, X, Trash2, Check } from 'lucide-react';
 import { INVESTMENT_GOALS } from '../constants/investments';
 import InvestmentForm from './InvestmentForm';
 
@@ -280,8 +280,9 @@ export default function InvestmentView() {
                                 <h3 className="text-lg font-bold text-white truncate max-w-[60%]">{goal.label}</h3>
                                 <div className="flex items-center gap-2">
                                     {goal.target > 0 && (
-                                        <div className={`text-xs font-bold px-2 py-1 rounded-full ${isCompleted ? 'bg-lime-500 text-black' : 'bg-neutral-800 text-neutral-400'}`}>
-                                            {progress.toFixed(1)}%
+                                        <div className={`text-xs font-bold px-2 py-1 rounded-full ${isCompleted ? 'bg-lime-500 text-black flex items-center gap-1' : 'bg-neutral-800 text-neutral-400'}`}>
+                                            {isCompleted && <Check size={12} strokeWidth={3} />}
+                                            {isCompleted ? 'Completada' : `${progress.toFixed(1)}%`}
                                         </div>
                                     )}
                                     <button onClick={() => handleDeleteGoal(goal)} className="text-neutral-600 hover:text-red-400 p-1">
