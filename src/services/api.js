@@ -60,3 +60,36 @@ export async function getExpenses(apiEndpoint, type = 'expense') {
         throw error;
     }
 }
+
+/**
+ * Fetches configuration data (sync) from Google Apps Script.
+ * @param {string} apiEndpoint
+ * @returns {Promise<Object>} - The config entries.
+ */
+export async function getConfigs(apiEndpoint) {
+    try {
+        const data = await getExpenses(apiEndpoint, 'config');
+        // Data comes as array of { date, key, value }. We need to reduce to latest values.
+        // But the raw fetch is enough here, parsing logic can be in the View or a helper.
+        return data;
+    } catch (error) {
+        console.error("Config Fetch Error:", error);
+        return [];
+    }
+}
+
+/**
+ * Saves a configuration setting to Google Apps Script.
+ * @param {string} key - Config key (e.g. 'hidden_goals')
+ * @param {any} value - Config value (will be JSON stringified)
+ * @param {string} apiEndpoint
+ */
+export async function saveConfig(key, value, apiEndpoint) {
+    const payload = {
+        sheetType: 'config',
+        date: new Date(),
+        key: key,
+        value: JSON.stringify(value)
+    };
+    return await submitExpense(payload, apiEndpoint);
+}
